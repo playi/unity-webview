@@ -132,12 +132,8 @@ static void UnitySendMessage(
     
     WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
     WKUserContentController *controller = [[WKUserContentController alloc] init];
-    WKPreferences *preferences = [[WKPreferences alloc] init];
-    preferences.javaScriptEnabled = true;
-    preferences.plugInsEnabled = true;
     [controller addScriptMessageHandler:self name:@"unityControl"];
     configuration.userContentController = controller;
-    // configuration.preferences = preferences;
     NSRect frame = NSMakeRect(0, 0, width / 2, height / 2);
     webView = [[WKWebView alloc] initWithFrame:frame
                                  configuration:configuration];

@@ -192,7 +192,7 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
                       ofObject:(id)object
                         change:(NSDictionary *)change
                        context:(void *)context {
-    if (webView == nil)
+    if (webView == nil || [webView URL] == nil)
         return;
     
     if ([keyPath isEqualToString:@"loading"] && [[change objectForKey:NSKeyValueChangeNewKey] intValue] == 0) {
