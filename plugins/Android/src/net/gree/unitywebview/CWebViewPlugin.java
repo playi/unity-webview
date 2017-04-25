@@ -67,6 +67,7 @@ class CWebViewPluginInterface {
 }
 
 public class CWebViewPlugin {
+    private static final String TAG = "CWebViewPlugin";
     private static FrameLayout layout = null;
     private WebView mWebView;
     private CWebViewPluginInterface mWebViewPlugin;
@@ -94,7 +95,7 @@ public class CWebViewPlugin {
 
             // webView.setWebChromeClient(new WebChromeClient() {
             //     public boolean onConsoleMessage(android.webkit.ConsoleMessage cm) {
-            //         Log.d("Webview", cm.message());
+            //         Log.d(TAG, cm.message());
             //         return true;
             //     }
             // });
@@ -125,8 +126,10 @@ public class CWebViewPlugin {
 
                 @Override
                 public void onLoadResource(WebView view, String url) {
+                    mWebView.clearHistory();
                     canGoBack = webView.canGoBack();
                     canGoForward = webView.canGoForward();
+                    Log.d(TAG, "onLoadResource " + url + " canGoBack " + canGoBack + " canGoForward " + canGoForward);
                 }
 
                 @Override
@@ -232,6 +235,7 @@ public class CWebViewPlugin {
                 return;
             }
             mWebView.loadUrl(url);
+            mWebView.clearHistory();
         }});
     }
 
