@@ -56,7 +56,7 @@ public class WebViewObject : MonoBehaviour
     Texture2D texture;
     string inputString;
     bool hasFocus;
-#elif UNITY_IPHONE
+#elif UNITY_IPHONE || UNITY_IOS
     IntPtr webView;
 #elif UNITY_ANDROID
     AndroidJavaObject webView;
@@ -74,7 +74,7 @@ public class WebViewObject : MonoBehaviour
         get {
 #if !UNITY_EDITOR && UNITY_ANDROID
             return mIsKeyboardVisible;
-#elif !UNITY_EDITOR && UNITY_IPHONE
+#elif !UNITY_EDITOR && (UNITY_IPHONE || UNITY_IOS)
             return TouchScreenKeyboard.visible;
 #else
             return false;
@@ -131,7 +131,7 @@ public class WebViewObject : MonoBehaviour
     private static extern void _CWebViewPlugin_SetCurrentInstance(IntPtr instance);
     [DllImport("WebView")]
     private static extern IntPtr GetRenderEventFunc();
-#elif UNITY_IPHONE
+#elif UNITY_IPHONE || UNITY_IOS
     [DllImport("__Internal")]
     private static extern IntPtr _CWebViewPlugin_Init(string gameObject, bool transparent, bool enableWKWebView);
     [DllImport("__Internal")]
@@ -205,7 +205,7 @@ public class WebViewObject : MonoBehaviour
         })()");
         rect = new Rect(0, 0, Screen.width, Screen.height);
         OnApplicationFocus(true);
-#elif UNITY_IPHONE
+#elif UNITY_IPHONE || UNITY_IOS
         webView = _CWebViewPlugin_Init(name, transparent, enableWKWebView);
 #elif UNITY_ANDROID
         webView = new AndroidJavaObject("net.gree.unitywebview.CWebViewPlugin");
@@ -222,7 +222,7 @@ public class WebViewObject : MonoBehaviour
             return;
         _CWebViewPlugin_Destroy(webView);
         webView = IntPtr.Zero;
-#elif UNITY_IPHONE
+#elif UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return;
         _CWebViewPlugin_Destroy(webView);
@@ -244,7 +244,7 @@ public class WebViewObject : MonoBehaviour
         rect.y = center.y + (Screen.height - scale.y)/2;
         rect.width = scale.x;
         rect.height = scale.y;
-#elif UNITY_IPHONE
+#elif UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero) return;
         _CWebViewPlugin_SetFrame(webView,(int)center.x,(int)center.y,(int)scale.x,(int)scale.y);
 #endif
@@ -261,7 +261,7 @@ public class WebViewObject : MonoBehaviour
         int height = Screen.height - (bottom + top);
         _CWebViewPlugin_SetRect(webView, width, height);
         rect = new Rect(left, bottom, width, height);
-#elif UNITY_IPHONE
+#elif UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return;
         _CWebViewPlugin_SetMargins(webView, left, top, right, bottom);
@@ -280,7 +280,7 @@ public class WebViewObject : MonoBehaviour
         if (webView == IntPtr.Zero)
             return;
         _CWebViewPlugin_SetVisibility(webView, v);
-#elif UNITY_IPHONE
+#elif UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return;
         _CWebViewPlugin_SetVisibility(webView, v);
@@ -303,7 +303,7 @@ public class WebViewObject : MonoBehaviour
             return;
 #if UNITY_WEBPLAYER
         Application.ExternalCall("unityWebView.loadURL", name, url);
-#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE
+#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return;
         _CWebViewPlugin_LoadURL(webView, url);
@@ -322,7 +322,7 @@ public class WebViewObject : MonoBehaviour
             baseUrl = "";
 #if UNITY_WEBPLAYER
         //TODO: UNSUPPORTED
-#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE
+#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return;
         _CWebViewPlugin_LoadHTML(webView, html, baseUrl);
@@ -337,7 +337,7 @@ public class WebViewObject : MonoBehaviour
     {
 #if UNITY_WEBPLAYER
         Application.ExternalCall("unityWebView.evaluateJS", name, js);
-#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE
+#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return;
         _CWebViewPlugin_EvaluateJS(webView, js);
@@ -351,7 +351,7 @@ public class WebViewObject : MonoBehaviour
     public bool CanGoBack()
     {
 #if UNITY_WEBPLAYER
-#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE
+#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return false;
         return _CWebViewPlugin_CanGoBack(webView);
@@ -365,7 +365,7 @@ public class WebViewObject : MonoBehaviour
     public bool CanGoForward()
     {
 #if UNITY_WEBPLAYER
-#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE
+#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return false;
         return _CWebViewPlugin_CanGoForward(webView);
@@ -379,7 +379,7 @@ public class WebViewObject : MonoBehaviour
     public void GoBack()
     {
 #if UNITY_WEBPLAYER
-#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE
+#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return;
         _CWebViewPlugin_GoBack(webView);
@@ -393,7 +393,7 @@ public class WebViewObject : MonoBehaviour
     public void GoForward()
     {
 #if UNITY_WEBPLAYER
-#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE
+#elif UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_IPHONE || UNITY_IOS
         if (webView == IntPtr.Zero)
             return;
         _CWebViewPlugin_GoForward(webView);
