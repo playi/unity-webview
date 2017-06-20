@@ -421,9 +421,6 @@ public class WebViewObject : MonoBehaviour
     public void CallFromJS(string message)
     {
         if (onJS != null) {
-#if !UNITY_ANDROID
-            message = WWW.UnEscapeURL(message);
-#endif
             onJS(message);
         }
     }
