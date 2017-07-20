@@ -147,8 +147,6 @@ static void UnitySendMessage(
     [webView setAutoresizingMask:(NSViewWidthSizable|NSViewHeightSizable)];
     // [webView setFrameLoadDelegate:(id)self];
     // [webView setPolicyDelegate:(id)self];
-    webView.UIDelegate = self;
-    webView.navigationDelegate = self;
     gameObject = [[NSString stringWithUTF8String:gameObject_] retain];
     if (ua_ != NULL && strcmp(ua_, "") != 0) {
         ua = [[NSString stringWithUTF8String:ua_] retain];
@@ -164,6 +162,10 @@ static void UnitySendMessage(
     windowController = [[NSWindowController alloc] initWithWindow:window];
     
     return self;
+}
+
+- (void)detach {
+    [windowController release];
 }
 
 - (void)dealloc
@@ -531,6 +533,7 @@ void *_CWebViewPlugin_Init(
 void _CWebViewPlugin_Destroy(void *instance)
 {
     CWebViewPlugin *webViewPlugin = (CWebViewPlugin *)instance;
+    [webViewPlugin detach];
     [webViewPlugin release];
     [pool removeObject:[NSValue valueWithPointer:instance]];
 }
