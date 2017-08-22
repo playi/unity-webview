@@ -161,6 +161,10 @@ public class CWebViewPlugin {
             }
             webSettings.setDatabaseEnabled(true);
             webSettings.setDomStorageEnabled(true);
+            String appCachePath = webView.getContext().getDir("cache", Context.MODE_PRIVATE).getPath();
+            webSettings.setAppCachePath(appCachePath);
+            webSettings.setAllowFileAccess(true);
+            webSettings.setAppCacheEnabled(true);
             String databasePath = webView.getContext().getDir("databases", Context.MODE_PRIVATE).getPath();
             webSettings.setDatabasePath(databasePath);
 
