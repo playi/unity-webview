@@ -24,6 +24,7 @@ package net.gree.unitywebview;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
@@ -170,6 +171,8 @@ public class CWebViewPlugin {
 
             if (transparent) {
                 webView.setBackgroundColor(0x00000000);
+            } else {
+                webView.setBackgroundColor(Color.BLACK);
             }
 
             if (layout == null) {
