@@ -20,7 +20,7 @@
 
 require 'fileutils'
 
-UNITY="/Applications/Unity541p3/Unity.app/Contents"
+UNITY="/Applications/Unity562p2/Unity.app/Contents"
 
 # NOTE: WebPlayerTemplates is not inclued for now because the sample app becomes complicated.
 #
