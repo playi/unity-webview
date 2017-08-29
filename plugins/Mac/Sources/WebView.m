@@ -228,6 +228,16 @@ static void UnitySendMessage(
 }
 */
 
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    UnitySendMessage([gameObject UTF8String], "CallOnError", [[error localizedDescription] UTF8String]);
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    UnitySendMessage([gameObject UTF8String], "CallOnError", [[error localizedDescription] UTF8String]);
+}
+
 - (void)webView:(WKWebView*)wkWebView didCommitNavigation:(null_unspecified WKNavigation *)navigation
 {
     UnitySendMessage([gameObject UTF8String], "CallOnLoaded", "Unknown URL");

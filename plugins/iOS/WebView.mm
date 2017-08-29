@@ -204,6 +204,16 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
     }
 }
 
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    UnitySendMessage([gameObject UTF8String], "CallOnError", [[error localizedDescription] UTF8String]);
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    UnitySendMessage([gameObject UTF8String], "CallOnError", [[error localizedDescription] UTF8String]);
+}
+
 - (void)webView:(UIWebView *)uiWebView didFailLoadWithError:(NSError *)error
 {
     UnitySendMessage([gameObjectName UTF8String], "CallOnError", [[error description] UTF8String]);
