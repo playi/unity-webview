@@ -269,7 +269,7 @@ public class CWebViewPlugin {
             if (mWebView == null) {
                 return;
             }
-            mWebView.loadUrl("javascript:" + js);
+            mWebView.evaluateJavascript(js, null);
         }});
     }
 

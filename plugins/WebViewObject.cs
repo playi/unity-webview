@@ -344,7 +344,7 @@ public class WebViewObject : MonoBehaviour
 #elif UNITY_ANDROID
         if (webView == null)
             return;
-        webView.Call("LoadURL", "javascript:" + js);
+        webView.Call("EvaluateJS", js);
 #endif
     }
 
