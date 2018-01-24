@@ -137,9 +137,12 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
         webView = [[UIWebView alloc] initWithFrame:view.frame];
         webView.delegate = self;
     }
+    webView.opaque = NO;
     if (transparent) {
-        webView.opaque = NO;
         webView.backgroundColor = [UIColor clearColor];
+    }
+    else{
+        webView.backgroundColor = [UIColor blackColor];
     }
     webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     webView.hidden = YES;
