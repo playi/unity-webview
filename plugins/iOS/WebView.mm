@@ -55,7 +55,6 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
 
 - (void)load:(NSURLRequest *)request
 {
-    NSLog(@"WebView load: %@", request);
     WKWebView *webView = (WKWebView *)self;
     NSURL *url = [request URL];
     if ([url.absoluteString hasPrefix:@"file:"]) {
@@ -68,7 +67,6 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
 
 - (void)loadHTML:(NSString *)html baseURL:(NSURL *)baseUrl
 {
-    NSLog(@"WebView loadHTML: %@ baseURL:%@", html, baseUrl);
     WKWebView *webView = (WKWebView *)self;
     [webView loadHTMLString:html baseURL:baseUrl];
 }
@@ -141,9 +139,10 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
     }
     webView.opaque = NO;
     if (transparent) {
-      webView.backgroundColor = [UIColor clearColor];
-    }else{
-      webView.backgroundColor = [UIColor blackColor];
+        webView.backgroundColor = [UIColor clearColor];
+    }
+    else{
+        webView.backgroundColor = [UIColor blackColor];
     }
     webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     webView.hidden = YES;
@@ -210,26 +209,17 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
 
 - (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
 {
-    NSLog(@"didFailNavigation: %@", error);
-    if (error.code != NSURLErrorCancelled) {
-        UnitySendMessage([gameObjectName UTF8String], "CallOnError", [[error localizedDescription] UTF8String]);
-    }
+    UnitySendMessage([gameObjectName UTF8String], "CallOnError", [[error localizedDescription] UTF8String]);
 }
 
 - (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error
 {
-    NSLog(@"didFailProvisionalNavigation: %@", error);
-    if (error.code != NSURLErrorCancelled) {
-        UnitySendMessage([gameObjectName UTF8String], "CallOnError", [[error localizedDescription] UTF8String]);
-    }
+    UnitySendMessage([gameObjectName UTF8String], "CallOnError", [[error localizedDescription] UTF8String]);
 }
 
 - (void)webView:(UIWebView *)uiWebView didFailLoadWithError:(NSError *)error
 {
-    NSLog(@"didFailLoadWithError: %@", error);
-    if (error.code != NSURLErrorCancelled) {
-        UnitySendMessage([gameObjectName UTF8String], "CallOnError", [[error localizedDescription] UTF8String]);
-    }
+    UnitySendMessage([gameObjectName UTF8String], "CallOnError", [[error description] UTF8String]);
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)uiWebView {
