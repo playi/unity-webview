@@ -41,6 +41,7 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
 - (void)evaluateJavaScript:(NSString *)javaScriptString completionHandler:(void (^ __nullable)(__nullable id, NSError * __nullable error))completionHandler;
 @property (nonatomic, readonly) BOOL canGoBack;
 @property (nonatomic, readonly) BOOL canGoForward;
+@property (nonatomic, readonly, getter=isLoading) BOOL loading;
 - (void)goBack;
 - (void)goForward;
 - (void)stopLoading;
@@ -140,8 +141,7 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
     webView.opaque = NO;
     if (transparent) {
         webView.backgroundColor = [UIColor clearColor];
-    }
-    else{
+    }else{
         webView.backgroundColor = [UIColor blackColor];
     }
     webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -379,6 +379,12 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
     [webView goForward];
 }
 
+- (bool)isLoading
+{
+    if (webView == nil)
+        return false;
+    return [webView isLoading];
+}
 @end
 
 extern "C" {
@@ -395,6 +401,7 @@ extern "C" {
     BOOL _CWebViewPlugin_CanGoForward(void *instance);
     void _CWebViewPlugin_GoBack(void *instance);
     void _CWebViewPlugin_GoForward(void *instance);
+    bool _CWebViewPlugin_IsLoading(void *instance);
 }
 
 void *_CWebViewPlugin_Init(const char *gameObjectName, BOOL transparent, BOOL enableWKWebView)
@@ -475,4 +482,10 @@ void _CWebViewPlugin_GoForward(void *instance)
 {
     CWebViewPlugin *webViewPlugin = (__bridge CWebViewPlugin *)instance;
     [webViewPlugin goForward];
+}
+
+bool _CWebViewPlugin_IsLoading(void *instance)
+{
+    CWebViewPlugin *webViewPlugin = (__bridge CWebViewPlugin *)instance;
+    return [webViewPlugin isLoading];
 }
