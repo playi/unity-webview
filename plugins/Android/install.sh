@@ -15,7 +15,7 @@ BIN_DIR="${CWD}/bin"
 # options
 MODE="Release"
 SCRIPTING_BACKEND="il2cpp"
-UNITY="/Applications/Unity562p2"
+UNITY="/Applications/Unity201731p4"
 
 for OPT in $*; do
   case $OPT in
