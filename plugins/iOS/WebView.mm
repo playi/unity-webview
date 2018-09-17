@@ -329,7 +329,7 @@ extern "C" void UnitySendMessage(const char *, const char *, const char *);
         return;
     NSString *urlStr = [NSString stringWithUTF8String:url];
     NSURL *nsurl = [NSURL URLWithString:urlStr];
-    NSURLRequest *request = [NSURLRequest requestWithURL:nsurl];
+    NSURLRequest *request = [NSURLRequest requestWithURL:nsurl cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:60.0f];
     [webView load:request];
 }
 
