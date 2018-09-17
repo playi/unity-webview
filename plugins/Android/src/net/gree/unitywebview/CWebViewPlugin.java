@@ -24,22 +24,33 @@ package net.gree.unitywebview;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
-import android.os.SystemClock;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.widget.FrameLayout;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+
 import com.unity3d.player.UnityPlayer;
 
 class CWebViewPluginInterface {
@@ -70,8 +81,11 @@ public class CWebViewPlugin {
     private static FrameLayout layout = null;
     private WebView mWebView;
     private CWebViewPluginInterface mWebViewPlugin;
+    private int progress;
     private boolean canGoBack;
     private boolean canGoForward;
+    private Hashtable<String, String> mCustomHeaders;
+    private String mWebViewUA;
 
     public CWebViewPlugin() {
     }
@@ -80,13 +94,15 @@ public class CWebViewPlugin {
         return mWebView != null;
     }
 
-    public void Init(final String gameObject, final boolean transparent) {
+    public void Init(final String gameObject, final boolean transparent, final String ua) {
         final CWebViewPlugin self = this;
         final Activity a = UnityPlayer.currentActivity;
         a.runOnUiThread(new Runnable() {public void run() {
             if (mWebView != null) {
                 return;
             }
+            mCustomHeaders = new Hashtable<String, String>();
+            
             final WebView webView = new WebView(a);
             webView.setVisibility(View.GONE);
             webView.setFocusable(true);
@@ -98,7 +114,34 @@ public class CWebViewPlugin {
             //         return true;
             //     }
             // });
-            webView.setWebChromeClient(new WebChromeClient());
+            webView.setWebChromeClient(new WebChromeClient() {
+                View videoView;
+
+                @Override
+                public void onProgressChanged(WebView view, int newProgress) {
+                    progress = newProgress;
+                }
+
+                @Override
+                public void onShowCustomView(View view, CustomViewCallback callback) {
+                    super.onShowCustomView(view, callback);
+                    if (layout != null) {
+                        videoView = view;
+                        layout.setBackgroundColor(0xff000000);
+                        layout.addView(videoView);
+                    }
+                }
+
+                @Override
+                public void onHideCustomView() {
+                    super.onHideCustomView();
+                    if (layout != null) {
+                        layout.removeView(videoView);
+                        layout.setBackgroundColor(0x00000000);
+                        videoView = null;
+                    }
+                }
+            });
 
             mWebViewPlugin = new CWebViewPluginInterface(self, gameObject);
             webView.setWebViewClient(new WebViewClient() {
@@ -109,11 +152,19 @@ public class CWebViewPlugin {
                     canGoForward = webView.canGoForward();
                     mWebViewPlugin.call("CallOnError", errorCode + "\t" + description + "\t" + failingUrl);
                 }
+                
+                @Override
+                public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+                	canGoBack = webView.canGoBack();
+                    canGoForward = webView.canGoForward();
+                    mWebViewPlugin.call("CallOnHttpError", Integer.toString(errorResponse.getStatusCode()));
+                }
 
                 @Override
                 public void onPageStarted(WebView view, String url, Bitmap favicon) {
                     canGoBack = webView.canGoBack();
                     canGoForward = webView.canGoForward();
+                    mWebViewPlugin.call("CallOnStarted", url);
                 }
 
                 @Override
@@ -130,6 +181,35 @@ public class CWebViewPlugin {
                 }
 
                 @Override
+                public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                    if (mCustomHeaders == null || mCustomHeaders.isEmpty()) {
+                        return super.shouldInterceptRequest(view, url);
+                    }
+
+                    try {
+                        HttpURLConnection urlCon = (HttpURLConnection) (new URL(url)).openConnection();
+                        // The following should make HttpURLConnection have a same user-agent of webView)
+                        // cf. http://d.hatena.ne.jp/faw/20070903/1188796959 (in Japanese)
+                        urlCon.setRequestProperty("User-Agent", mWebViewUA);
+
+                        for (HashMap.Entry<String, String> entry: mCustomHeaders.entrySet()) {
+                            urlCon.setRequestProperty(entry.getKey(), entry.getValue());
+                        }
+
+                        urlCon.connect();
+
+                        return new WebResourceResponse(
+                            urlCon.getContentType().split(";", 2)[0],
+                            urlCon.getContentEncoding(),
+                            urlCon.getInputStream()
+                        );
+
+                    } catch (Exception e) {
+                        return super.shouldInterceptRequest(view, url);
+                    }
+                }
+
+                @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
                     canGoBack = webView.canGoBack();
                     canGoForward = webView.canGoForward();
@@ -143,19 +223,32 @@ public class CWebViewPlugin {
                         return true;
                     }
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    view.getContext().startActivity(intent);
+                    PackageManager pm = a.getPackageManager();
+                    List<ResolveInfo> apps = pm.queryIntentActivities(intent, 0);
+                    if (apps.size() > 0) {
+                        view.getContext().startActivity(intent);
+                    }
                     return true;
                 }
             });
             webView.addJavascriptInterface(mWebViewPlugin , "Unity");
 
             WebSettings webSettings = webView.getSettings();
-            webSettings.setSupportZoom(false);
+            if (ua != null && ua.length() > 0) {
+                webSettings.setUserAgentString(ua);
+            }
+            mWebViewUA = webSettings.getUserAgentString();
+            webSettings.setSupportZoom(true);
+            webSettings.setBuiltInZoomControls(true);
+            webSettings.setDisplayZoomControls(false);
+            webSettings.setLoadWithOverviewMode(true);
+            webSettings.setUseWideViewPort(true);
             webSettings.setJavaScriptEnabled(true);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 // Log.i("CWebViewPlugin", "Build.VERSION.SDK_INT = " + Build.VERSION.SDK_INT);
                 webSettings.setAllowUniversalAccessFromFileURLs(true);
             }
+            webSettings.setMediaPlaybackRequiresUserGesture(false);
             webSettings.setDatabaseEnabled(true);
             webSettings.setDomStorageEnabled(true);
             String databasePath = webView.getContext().getDir("databases", Context.MODE_PRIVATE).getPath();
@@ -231,7 +324,11 @@ public class CWebViewPlugin {
             if (mWebView == null) {
                 return;
             }
-            mWebView.loadUrl(url);
+            if (mCustomHeaders != null && !mCustomHeaders.isEmpty()) {
+                mWebView.loadUrl(url, mCustomHeaders);
+            } else {
+                mWebView.loadUrl(url);;
+            }
         }});
     }
 
@@ -252,7 +349,11 @@ public class CWebViewPlugin {
             if (mWebView == null) {
                 return;
             }
-            mWebView.loadUrl("javascript:" + js);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                mWebView.evaluateJavascript(js, null);
+            } else {
+                mWebView.loadUrl("javascript:" + URLEncoder.encode(js));
+            }
         }});
     }
 
@@ -307,4 +408,63 @@ public class CWebViewPlugin {
             }
         }});
     }
+
+    public void AddCustomHeader(final String headerKey, final String headerValue)
+    {
+        if (mCustomHeaders == null) {
+            return;
+        }
+        mCustomHeaders.put(headerKey, headerValue);
+    }
+
+    public String GetCustomHeaderValue(final String headerKey)
+    {
+        if (mCustomHeaders == null) {
+            return null;
+        }
+
+        if (!mCustomHeaders.containsKey(headerKey)) {
+            return null;
+        }
+        return this.mCustomHeaders.get(headerKey);
+    }
+
+    public void RemoveCustomHeader(final String headerKey)
+    {
+        if (mCustomHeaders == null) {
+            return;
+        }
+
+        if (this.mCustomHeaders.containsKey(headerKey)) {
+            this.mCustomHeaders.remove(headerKey);
+        }
+    }
+
+    public void ClearCustomHeader()
+    {
+        if (mCustomHeaders == null) {
+            return;
+        }
+
+        this.mCustomHeaders.clear();
+    }
+
+    public void ClearCookies()
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) 
+        {
+           CookieManager.getInstance().removeAllCookies(null);
+           CookieManager.getInstance().flush();
+        } else {
+           final Activity a = UnityPlayer.currentActivity;
+           CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(a);
+           cookieSyncManager.startSync();
+           CookieManager cookieManager = CookieManager.getInstance();
+           cookieManager.removeAllCookie();
+           cookieManager.removeSessionCookie();
+           cookieSyncManager.stopSync();
+           cookieSyncManager.sync();
+        }
+    }
+
 }
